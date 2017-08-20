@@ -1,6 +1,6 @@
 PLUGIN.name = "Corpses"
 PLUGIN.author = "SuperMicronde"
-PLUGIN.desc = "Plugin qui permet de fouiller les corps."
+PLUGIN.desc = "You can search the player corpses for take items and money."
 
 nut.config.add("corpseTimer", 5, "Après combien de temps un corps disparaît", nil, {
 	data = {min = 0, max = 86400},

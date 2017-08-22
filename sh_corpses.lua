@@ -111,7 +111,7 @@ function PLUGIN:PlayerDeath(victim, inflictor, attacker)
 				for k, v in pairs(victimInv:getItems()) do
 					local item = victimInv:getItemAt(v.gridX, v.gridY)
 					item.player = victim
-					item.hooks["drop"](item)
+					item.functions.EquipUn.onRun(item)
 					inventory:add(item.uniqueID, 1, item.data, v.gridX, v.gridY)
 				end
 			end

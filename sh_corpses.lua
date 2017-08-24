@@ -122,7 +122,7 @@ function PLUGIN:SaveData()
 	for k, v in pairs(ents.FindByClass( "prop_ragdoll" )) do
 		if v:GetNWInt("nut_inventoryOwner") then
 		
-			ragdolls[#ragdolls + 1] = {v:GetNWString("nut_inventoryOwner"), v:GetMaterial(), v:GetAngles(), v:GetColor(), v:GetModel(), v:GetSkin(), v:GetPos(), v:GetVar("time"), v:GetNWInt("nut_inventoryID"), v:GetNWInt("corpseMoney"), v:GetNWInt("corpseInvH"), v:GetNWInt("corpseInvW"), v:GetBodygroup(), v:GetVar("allBodyGroupsCorpses")}
+			ragdolls[#ragdolls + 1] = {v:GetNWString("nut_inventoryOwner"), v:GetMaterial(), v:GetAngles(), v:GetColor(), v:GetModel(), v:GetSkin(), v:GetPos(), v:GetVar("time"), v:GetNWInt("nut_inventoryID"), v:GetNWInt("corpseMoney"), v:GetNWInt("corpseInvH"), v:GetNWInt("corpseInvW"), v:GetVar("allBodyGroupsCorpses")}
 		end
 	end
 	

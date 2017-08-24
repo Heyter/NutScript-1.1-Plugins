@@ -2,6 +2,12 @@ PLUGIN.name = "Corpses"
 PLUGIN.author = "SuperMicronde"
 PLUGIN.desc = "You can search the player corpses for take items and money."
 
+//Items that you dont want to be put in the corpse when you die //
+local BLACKLIST = {												//
+	"cid", // Dont forget the "," !								//
+}																//
+//////////////////////////////////////////////////////////////////
+
 nut.config.add("corpseTimer", 86000, "Après combien de temps un corps disparaît", nil, {
 	data = {min = 0, max = 86400},
 	category = "server",
@@ -15,6 +21,22 @@ nut.config.add("corpseOpenTime", 5, "Combien de temps prend un joueur a fouiller
 	default = 5,
 	value = 5,
 })
+
+nut.command.add("corpsesclean", {
+	superAdminOnly = true,
+	onRun = function (client, arguments)
+		for k, itm in pairs( ents.FindByClass( "prop_ragdoll" ) ) do
+			if itm:GetClass() == "prop_ragdoll" && itm:GetNWInt("nut_inventoryID", -1) > 1 then
+				itm:Remove()
+			end
+		end
+		client:notify("Cleanup effectué")
+	end
+})
+
+local function isOnBlacklist(item)
+	return table.HasValue( BLACKLIST, item )
+end
 
 if(SERVER)then
 
@@ -111,12 +133,15 @@ function PLUGIN:PlayerDeath(victim, inflictor, attacker)
 				for k, v in pairs(victimInv:getItems()) do
 					local item = victimInv:getItemAt(v.gridX, v.gridY)
 					
-					if item.functions.EquipUn then
-						item.player = victim
-						item.functions.EquipUn.onRun(item)
-					end
+					if !isOnBlacklist(item.uniqueID) then
+						if item.functions.EquipUn then
+							item.player = victim
+							item.functions.EquipUn.onRun(item)
+						end
 					
-					inventory:add(item.uniqueID, 1, item.data, v.gridX, v.gridY)
+						inventory:add(item.uniqueID, 1, item.data, v.gridX, v.gridY)
+					end
+				
 				end
 			end
 			
@@ -129,7 +154,9 @@ function PLUGIN:PlayerDeath(victim, inflictor, attacker)
 			local victimInv = victimChar:getInv()
 
 			for key, value in pairs(victimInv:getItems()) do
-				victimInv:remove(value.id)
+				if !isOnBlacklist(value.uniqueID) then
+					victimInv:remove(value.id)
+				end
 			end
 				
 			victimChar:setMoney(0)

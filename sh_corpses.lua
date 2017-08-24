@@ -2,7 +2,7 @@ PLUGIN.name = "Corpses"
 PLUGIN.author = "SuperMicronde"
 PLUGIN.desc = "You can search the player corpses for take items and money."
 
-nut.config.add("corpseTimer", 5, "Après combien de temps un corps disparaît", nil, {
+nut.config.add("corpseTimer", 86000, "Après combien de temps un corps disparaît", nil, {
 	data = {min = 0, max = 86400},
 	category = "server",
 	default = 86000,

@@ -12,7 +12,7 @@ hook.Add("EntityTakeDamage", "PlayerTakeDamageAtHead", function( target, dmg )
 	
 		local victimHealth = target:Health()
 		
-		if IsValid(target) && dmg:GetDamage() <= victimHealth && dmg:IsDamageType( DMG_BULLET ) then
+		if IsValid(target) && target:IsPlayer() && dmg:GetDamage() <= victimHealth && dmg:IsDamageType( DMG_BULLET ) then
 			
 			local shootPos = dmg:GetDamagePosition()
 			local bonePos = target:GetBonePosition(target:LookupBone( "ValveBiped.Bip01_Head1" ))

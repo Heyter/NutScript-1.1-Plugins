@@ -2,11 +2,11 @@ PLUGIN.name = "Corpses"
 PLUGIN.author = "SuperMicronde"
 PLUGIN.desc = "You can search the player corpses for take items and money."
 
-//Items that you dont want to be put in the corpse when you die //
-local BLACKLIST = {												//
-	"cid", // Dont forget the "," !								//
-}																//
-//////////////////////////////////////////////////////////////////
+//Items that you dont want to be put in the corpse when you die
+local BLACKLIST = {												
+	"cid", // Dont forget the "," !								
+}																
+///////////////////////////////////////////////////////////////
 
 nut.config.add("corpseTimer", 86000, "Après combien de temps un corps disparaît", nil, {
 	data = {min = 0, max = 86400},
@@ -48,6 +48,14 @@ end
 
 local function takeReserve(amt, ragdoll)
 	addReserve(-amt, ragdoll)
+end
+
+local function setBodygroups(ragdoll, bodygroups)
+	if bodygroups then
+		for k, v in pairs(bodygroups) do
+			ragdoll:SetBodygroup(k, v.id)
+		end
+	end
 end
 
 netstream.Hook("askOpenToServer", function(client, index, ownerName, ragdollEnt)
@@ -92,6 +100,9 @@ function createRagdoll(ragdollData)
 	ragdoll:SetNWInt("corpseMoney", ragdollData[10])
 	ragdoll:SetNWInt("corpseInvH", ragdollData[11])
 	ragdoll:SetNWInt("corpseInvW", ragdollData[12])
+	ragdoll:SetVar("allBodyGroupsCorpses", ragdollData[13])
+	setBodygroups(ragdoll, ragdollData[13])
+	
 	ragdoll:Spawn();
 end
 
@@ -111,7 +122,7 @@ function PLUGIN:SaveData()
 	for k, v in pairs(ents.FindByClass( "prop_ragdoll" )) do
 		if v:GetNWInt("nut_inventoryOwner") then
 		
-			ragdolls[#ragdolls + 1] = {v:GetNWString("nut_inventoryOwner"), v:GetMaterial(), v:GetAngles(), v:GetColor(), v:GetModel(), v:GetSkin(), v:GetPos(), v:GetVar("time"), v:GetNWInt("nut_inventoryID"), v:GetNWInt("corpseMoney"), v:GetNWInt("corpseInvH"), v:GetNWInt("corpseInvW")}
+			ragdolls[#ragdolls + 1] = {v:GetNWString("nut_inventoryOwner"), v:GetMaterial(), v:GetAngles(), v:GetColor(), v:GetModel(), v:GetSkin(), v:GetPos(), v:GetVar("time"), v:GetNWInt("nut_inventoryID"), v:GetNWInt("corpseMoney"), v:GetNWInt("corpseInvH"), v:GetNWInt("corpseInvW"), v:GetBodygroup(), v:GetVar("allBodyGroupsCorpses")}
 		end
 	end
 	
@@ -145,7 +156,7 @@ function PLUGIN:PlayerDeath(victim, inflictor, attacker)
 				end
 			end
 			
-			local ragdollData = {victim:getChar():getName(), victim:GetMaterial(), victim:GetAngles(), victim:GetColor(), victim:GetModel(), victim:GetSkin(), victim:GetPos(), 0, inventory:getID(), victim:getChar():getMoney(), inventory.h, inventory.w}
+			local ragdollData = {victim:getChar():getName(), victim:GetMaterial(), victim:GetAngles(), victim:GetColor(), victim:GetModel(), victim:GetSkin(), victim:GetPos(), 0, inventory:getID(), victim:getChar():getMoney(), inventory.h, inventory.w, victim:GetBodyGroups()}
 			createRagdoll(ragdollData)
 		end)
 		

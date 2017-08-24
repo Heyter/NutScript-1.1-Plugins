@@ -120,7 +120,7 @@ function PLUGIN:PlayerDeath(victim, inflictor, attacker)
 				end
 			end
 			
-			local ragdollData = {victim:getChar():getRealname(), victim:GetMaterial(), victim:GetAngles(), victim:GetColor(), victim:GetModel(), victim:GetSkin(), victim:GetPos(), 0, inventory:getID(), victim:getChar():getMoney(), inventory.h, inventory.w}
+			local ragdollData = {victim:getChar():getName(), victim:GetMaterial(), victim:GetAngles(), victim:GetColor(), victim:GetModel(), victim:GetSkin(), victim:GetPos(), 0, inventory:getID(), victim:getChar():getMoney(), inventory.h, inventory.w}
 			createRagdoll(ragdollData)
 		end)
 		

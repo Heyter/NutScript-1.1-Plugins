@@ -111,7 +111,7 @@ function PLUGIN:PlayerDeath(victim, inflictor, attacker)
 				for k, v in pairs(victimInv:getItems()) do
 					local item = victimInv:getItemAt(v.gridX, v.gridY)
 					
-					if item.functions.EquipUn.onRun then
+					if item.functions.EquipUn then
 						item.player = victim
 						item.functions.EquipUn.onRun(item)
 					end

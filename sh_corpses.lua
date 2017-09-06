@@ -6,7 +6,6 @@ PLUGIN.desc = "You can search the player corpses for take items and money."
 local BLACKLIST = {												
 	"cid", // Dont forget the "," !								
 }																
-///////////////////////////////////////////////////////////////
 
 nut.config.add("corpseTimer", 86000, "Après combien de temps un corps disparaît", nil, {
 	data = {min = 0, max = 86400},
@@ -22,25 +21,69 @@ nut.config.add("corpseOpenTime", 5, "Combien de temps prend un joueur a fouiller
 	value = 5,
 })
 
+local entMeta = FindMetaTable("Entity")
+
+// Shared util functions
+
+function entMeta:isNutCorpse()
+	return self:GetNWInt("nut_inventoryID", -1) > 0
+end
+
 nut.command.add("corpsesclean", {
 	superAdminOnly = true,
 	onRun = function (client, arguments)
-		for k, itm in pairs( ents.FindByClass( "prop_ragdoll" ) ) do
-			if itm:GetClass() == "prop_ragdoll" && itm:GetNWInt("nut_inventoryID", -1) > 1 then
-				itm:Remove()
+		for k, ent in pairs( ents.FindByClass( "prop_ragdoll" ) ) do
+			if ent:isNutCorpse() then
+				ent:Remove()
 			end
 		end
 		client:notify("Cleanup effectué")
 	end
 })
 
+if(SERVER)then
+	
+// Util functions
+
 local function isOnBlacklist(item)
 	return table.HasValue( BLACKLIST, item )
 end
 
-if(SERVER)then
+function entMeta:generateBonesData()
 
-local alreadySpawn = false
+	local data = {}
+
+	for i = 0, self:GetPhysicsObjectCount() - 1 do
+		data[i] = {}
+		data[i].pos, data[i].ang = self:GetBonePosition(self:TranslatePhysBoneToBone(i))
+	end
+	
+	return data
+
+end
+
+// Permanent system
+
+function PLUGIN:LoadData()
+	for k, corpseData in pairs(self:getData()) do
+		createRagdoll(corpseData)
+	end
+end
+
+function PLUGIN:SaveData()
+
+	local ragdolls = {}
+
+	for k, v in pairs(ents.FindByClass( "prop_ragdoll" )) do
+		if v:isNutCorpse() then
+			ragdolls[#ragdolls + 1] = {v:GetNWString("nut_inventoryOwner"), v:GetMaterial(), v:GetAngles(), v:GetColor(), v:GetModel(), v:GetSkin(), v:GetPos(), v:GetVar("time"), v:GetNWInt("nut_inventoryID"), v:GetNWInt("corpseMoney"), v:GetNWInt("corpseInvH"), v:GetNWInt("corpseInvW"), v:GetVar("allBodyGroupsCorpses"), v:generateBonesData()}
+		end
+	end
+	
+	self:setData(ragdolls)
+end
+
+// Money functions
 
 local function addReserve(amt, ragdoll)
 	ragdoll:SetNWInt("corpseMoney", ragdoll:GetNWInt("corpseMoney") + amt)
@@ -50,13 +93,72 @@ local function takeReserve(amt, ragdoll)
 	addReserve(-amt, ragdoll)
 end
 
-local function setBodygroups(ragdoll, bodygroups)
-	if bodygroups then
-		for k, v in pairs(bodygroups) do
-			ragdoll:SetBodygroup(k, v.id)
+// Ragdoll creation functions
+
+function entMeta:updateBones(playerDead, velocity, data)
+	for i = 0, self:GetPhysicsObjectCount() - 1 do
+		local physObj = self:GetPhysicsObjectNum(i)
+
+		if (IsValid(physObj)) then
+			if velocity then
+				physObj:SetVelocity(velocity)
+			end
+
+			local index = self:TranslatePhysBoneToBone(i)
+
+			if (index) then
+				local position, angles = nil
+				
+				if playerDead then
+					position, angles = playerDead:GetBonePosition(index)
+				else
+					if data then
+						position = data[i].pos
+						angles = data[i].ang
+					end
+				end
+				
+				if position then
+					physObj:SetPos(position)
+				end
+				
+				if angles then
+					physObj:SetAngles(angles)
+				end
+			end
 		end
 	end
 end
+
+function entMeta:setBodygroups(bodygroups)
+	if bodygroups then
+		for k, v in pairs(bodygroups) do
+			self:SetBodygroup(k, v.id)
+		end
+	end
+end
+
+function createRagdoll(ragdollData, vel, ply)
+	local ragdoll = ents.Create("prop_ragdoll")
+	ragdoll:SetNWString("nut_inventoryOwner", ragdollData[1])
+	ragdoll:SetMaterial(ragdollData[2])
+	ragdoll:SetAngles(ragdollData[3])
+	ragdoll:SetColor(ragdollData[4])
+	ragdoll:SetModel(ragdollData[5])
+	ragdoll:SetSkin(ragdollData[6])
+	ragdoll:SetPos(ragdollData[7])
+	ragdoll:SetVar("time", ragdollData[8])
+	ragdoll:SetNWInt("nut_inventoryID", ragdollData[9])
+	ragdoll:SetNWInt("corpseMoney", ragdollData[10])
+	ragdoll:SetNWInt("corpseInvH", ragdollData[11])
+	ragdoll:SetNWInt("corpseInvW", ragdollData[12])
+	ragdoll:SetVar("allBodyGroupsCorpses", ragdollData[13])
+	ragdoll:setBodygroups(ragdollData[13])
+	ragdoll:Spawn()
+	ragdoll:updateBones(ply, vel, ragdollData[14])
+end
+
+// Server/Client communication
 
 netstream.Hook("askOpenToServer", function(client, index, ownerName, ragdollEnt)
 	if !nut.item.inventories[index] then
@@ -65,13 +167,18 @@ netstream.Hook("askOpenToServer", function(client, index, ownerName, ragdollEnt)
 	
 	nut.item.inventories[index]:sync(client)
 	
-	client:setAction("Fouille", nut.config.get("corpseOpenTime"), function()
-		if IsValid(ragdollEnt) then
-			netstream.Start(client, "corpseInvSynced", index, ownerName, ragdollEnt)
-		end
-	end)	
-end)
+	local corpseOpenTime = nut.config.get("corpseOpenTime")
 	
+	client:setAction("Fouille", corpseOpenTime)
+	client:doStaredAction(ragdollEnt, function() if IsValid(ragdollEnt) then
+		netstream.Start(client, "corpseInvSynced", index, ownerName, ragdollEnt)
+		end end, corpseOpenTime, function()
+		if (IsValid(client)) then
+			client:setAction()
+		end		
+	end)
+end)
+
 netstream.Hook("BankTakeMoneyCorpse", function(client, value, ragdoll)
 	if IsValid(ragdoll) && ragdoll:GetNWInt("corpseMoney") >= value then
 		client:getChar():giveMoney(value)
@@ -86,48 +193,7 @@ netstream.Hook("BankGiveMoneyCorpse", function(client, value, ragdoll)
 	end
 end)
 
-function createRagdoll(ragdollData)
-	local ragdoll = ents.Create("prop_ragdoll");
-	ragdoll:SetNWString("nut_inventoryOwner", ragdollData[1])
-	ragdoll:SetMaterial(ragdollData[2]);
-	ragdoll:SetAngles(ragdollData[3]);
-	ragdoll:SetColor(ragdollData[4]);
-	ragdoll:SetModel(ragdollData[5]);
-	ragdoll:SetSkin(ragdollData[6]);
-	ragdoll:SetPos(ragdollData[7]);
-	ragdoll:SetVar("time", ragdollData[8])
-	ragdoll:SetNWInt("nut_inventoryID", ragdollData[9])
-	ragdoll:SetNWInt("corpseMoney", ragdollData[10])
-	ragdoll:SetNWInt("corpseInvH", ragdollData[11])
-	ragdoll:SetNWInt("corpseInvW", ragdollData[12])
-	ragdoll:SetVar("allBodyGroupsCorpses", ragdollData[13])
-	setBodygroups(ragdoll, ragdollData[13])
-	
-	ragdoll:Spawn();
-end
-
-function PLUGIN:LoadData()
-	if alreadySpawn == false then
-		alreadySpawn = true
-		for k, v in pairs(self:getData()) do
-			createRagdoll(v)
-		end
-	end
-end
-
-function PLUGIN:SaveData()
-
-	local ragdolls = {}
-
-	for k, v in pairs(ents.FindByClass( "prop_ragdoll" )) do
-		if v:GetNWInt("nut_inventoryOwner") then
-		
-			ragdolls[#ragdolls + 1] = {v:GetNWString("nut_inventoryOwner"), v:GetMaterial(), v:GetAngles(), v:GetColor(), v:GetModel(), v:GetSkin(), v:GetPos(), v:GetVar("time"), v:GetNWInt("nut_inventoryID"), v:GetNWInt("corpseMoney"), v:GetNWInt("corpseInvH"), v:GetNWInt("corpseInvW"), v:GetVar("allBodyGroupsCorpses")}
-		end
-	end
-	
-	self:setData(ragdolls)
-end
+// Creating a ragdoll when a player die
 
 function PLUGIN:PlayerDeath(victim, inflictor, attacker)
 	
@@ -157,7 +223,7 @@ function PLUGIN:PlayerDeath(victim, inflictor, attacker)
 			end
 			
 			local ragdollData = {victim:getChar():getName(), victim:GetMaterial(), victim:GetAngles(), victim:GetColor(), victim:GetModel(), victim:GetSkin(), victim:GetPos(), 0, inventory:getID(), victim:getChar():getMoney(), inventory.h, inventory.w, victim:GetBodyGroups()}
-			createRagdoll(ragdollData)
+			createRagdoll(ragdollData, victim:GetVelocity(), victim)
 		end)
 		
 		if (nut.config.get("pkActive") == false) or (nut.config.get("pkActive") == true && nut.config.get("pkWorld") == true && inflictor:IsWorld()) then
@@ -177,8 +243,10 @@ function PLUGIN:PlayerDeath(victim, inflictor, attacker)
 	
 end
 
+// Removing inventory from Database when the corpse is removed
+
 hook.Add("EntityRemoved", "remove_inv_from_db_corpse", function(ent)
-	if ent:GetClass() == "prop_ragdoll" && ent:GetNWInt("nut_inventoryOwner", nil) then
+	if ent:GetClass() == "prop_ragdoll" && ent:GetNWInt("nut_inventoryID", -1) > 0 then
 		local index = ent:GetNWInt("nut_inventoryID")
 
 		if (!nut.shuttingDown and !ent.nutIsSafe and index) then
@@ -192,6 +260,8 @@ hook.Add("EntityRemoved", "remove_inv_from_db_corpse", function(ent)
 		end
 	end
 end)
+
+// Decomposition system
 
 local nextUpdate = 0
 
@@ -212,16 +282,19 @@ end)
 end
 
 if(CLIENT)then
+
 	local inventory = nil
 	local name = nil
 	local showHud = nil
 	local inventoryMoney = nil
 	local ragdollEntity = nil
 	
+	// Hud painting with died player information
+	
 	hook.Add("HUDPaint", "corpse_hud_nut1.1", function()
 		if LocalPlayer():getChar() && LocalPlayer():Alive() then
 			local eyeTrace = LocalPlayer():GetEyeTraceNoCursor().Entity
-			if IsValid(eyeTrace) && eyeTrace:GetClass() == "prop_ragdoll" && eyeTrace:GetNWInt("nut_inventoryID", -1) > 1 && LocalPlayer():GetPos():Distance( eyeTrace:GetPos()) < 60 then
+			if IsValid(eyeTrace) && eyeTrace:GetClass() == "prop_ragdoll" && eyeTrace:GetNWInt("nut_inventoryID", -1) > 0 && LocalPlayer():GetPos():Distance( eyeTrace:GetPos()) < 60 then
 				inventory = eyeTrace:GetNWInt("nut_inventoryID")
 				name = eyeTrace:GetNWString("nut_inventoryOwner")
 				ragdollEntity = eyeTrace
@@ -259,7 +332,7 @@ if(CLIENT)then
 		end
 	end)
 	
-	//MENU
+	// Corpse menu
 	
 	local function displayInventory(inventoryId, ownerName, ragdollEnt)
 		nut.gui.inv1 = vgui.Create("nutInventory")
@@ -416,12 +489,15 @@ if(CLIENT)then
 			end								
 		end
 	end
-	// FIN
+	
+	// Server/Client communication
 	
 	netstream.Hook("corpseInvSynced", function(index, ownerName, ragdollEnt)
 		displayInventory(index, ownerName, ragdollEnt )
 	end)
 	
+	// Open menu when Use key is pressed
+
 	hook.Add( "Tick", "CheckPlayer1Forward", function()
 		if IsValid(LocalPlayer()) && inventory && LocalPlayer():Alive() then
 			if (LocalPlayer():KeyPressed( IN_USE )) then
@@ -429,4 +505,5 @@ if(CLIENT)then
 			end
 		end
 	end )
+	
 end

@@ -4,10 +4,10 @@ PLUGIN.desc = "Define weapons that slow you down"
 
 PLUGIN.slowWeps = {
 	// ["weapon class"] = number of the max speed when you carry the weapon
-	["weapon_rpg"] = 130, -- Dont forget the comma ;)
+	["fo3_fatman"] = 130,
+	["fo3_fatman_nuke"] = 130,
+	["swep_flamethrower"] = 130,
 }
-
-if SERVER then
 
 local nextCheck = 0
 
@@ -19,15 +19,23 @@ function PLUGIN:Think()
 end
 
 function PLUGIN:checkWeapons()
-	for k, ply in pairs(player.GetAll()) do
-		local wepClass = ply:GetActiveWeapon():GetClass()
-	
+	if SERVER then
+		for k, ply in pairs(player.GetAll()) do
+			local wepClass = ply:GetActiveWeapon():GetClass()
+		
+			if self.slowWeps[wepClass] then
+				ply:SetRunSpeed(self.slowWeps[wepClass])
+			else
+				ply:SetRunSpeed(nut.config.get("runSpeed"))
+			end
+		end
+	else
+		local wepClass = LocalPlayer():GetActiveWeapon():GetClass()
+		
 		if self.slowWeps[wepClass] then
 			ply:SetRunSpeed(self.slowWeps[wepClass])
 		else
 			ply:SetRunSpeed(nut.config.get("runSpeed"))
 		end
 	end
-end
-
 end

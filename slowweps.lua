@@ -4,7 +4,7 @@ PLUGIN.desc = "Define weapons that slow you down"
 
 PLUGIN.slowWeps = {
 	// ["weapon class"] = number of the max speed when you carry the weapon
-	["fo3_fatman"] = 130
+	["weapon_rpg"] = 130
 }
 
 if SERVER then

@@ -206,19 +206,16 @@ function PLUGIN:PlayerDeath(victim, inflictor, attacker)
 			inventory.h = victimInv.h
 			inventory.w = victimInv.w
 			
-			if #victimInv:getItems() then
-				for k, v in pairs(victimInv:getItems()) do
-					local item = victimInv:getItemAt(v.gridX, v.gridY)
-					
-					if !isOnBlacklist(item.uniqueID) then
-						if item.functions.EquipUn then
-							item.player = victim
-							item.functions.EquipUn.onRun(item)
+			for k, slot in pairs(victimInv.slots) do
+				for key, itm in pairs(slot) do
+					if !isOnBlacklist(itm.uniqueID) then
+						if itm.functions.EquipUn then
+							itm.player = victim
+							itm.functions.EquipUn.onRun(itm)
 						end
-					
-						inventory:add(item.uniqueID, 1, item.data, v.gridX, v.gridY)
+						
+						itm:transfer(inventory:getID(), itm.gridX, itm.gridY)
 					end
-				
 				end
 			end
 			
@@ -228,13 +225,6 @@ function PLUGIN:PlayerDeath(victim, inflictor, attacker)
 		
 		if (nut.config.get("pkActive") == false) or (nut.config.get("pkActive") == true && nut.config.get("pkWorld") == true && inflictor:IsWorld()) then
 			local victimChar = victim:getChar()
-			local victimInv = victimChar:getInv()
-
-			for key, value in pairs(victimInv:getItems()) do
-				if !isOnBlacklist(value.uniqueID) then
-					victimInv:remove(value.id)
-				end
-			end
 				
 			victimChar:setMoney(0)
 		end

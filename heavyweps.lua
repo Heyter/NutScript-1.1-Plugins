@@ -36,9 +36,9 @@ function PLUGIN:checkWeapons()
 			local wepClass = LocalPlayer():GetActiveWeapon():GetClass()
 			
 			if self.slowWeps[wepClass] then
-				LocalPlayer():SetRunSpeed(self.slowWeps[wepClass])
+				LocalPlayer():SetMaxSpeed(self.slowWeps[wepClass])
 			else
-				LocalPlayer():SetRunSpeed(nut.config.get("runSpeed"))
+				LocalPlayer():SetMaxSpeed(nut.config.get("runSpeed"))
 			end
 		end
 	end

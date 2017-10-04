@@ -7,14 +7,14 @@ local BLACKLIST = {
 	"cid", // Dont forget the "," !								
 }																
 
-nut.config.add("corpseTimer", 86000, "Après combien de temps un corps disparaît", nil, {
+nut.config.add("corpseTimer", 86000, "After how many time the corpses disappear.", nil, {
 	data = {min = 0, max = 86400},
 	category = "server",
 	default = 86000,
 	value = 86000,
 })
 
-nut.config.add("corpseOpenTime", 5, "Combien de temps prend un joueur a fouiller un corps", nil, {
+nut.config.add("corpseOpenTime", 5, "How much time for search a corpse.", nil, {
 	data = {min = 0, max = 20},
 	category = "server",
 	default = 5,
@@ -37,7 +37,7 @@ nut.command.add("corpsesclean", {
 				ent:Remove()
 			end
 		end
-		client:notify("Cleanup effectué")
+		client:notify("Cleanup done !")
 	end
 })
 
@@ -169,7 +169,7 @@ netstream.Hook("askOpenToServer", function(client, index, ownerName, ragdollEnt)
 	
 	local corpseOpenTime = nut.config.get("corpseOpenTime")
 	
-	client:setAction("Fouille", corpseOpenTime)
+	client:setAction("Searching...", corpseOpenTime)
 	client:doStaredAction(ragdollEnt, function() if IsValid(ragdollEnt) then
 		netstream.Start(client, "corpseInvSynced", index, ownerName, ragdollEnt)
 		end end, corpseOpenTime, function()
@@ -308,7 +308,7 @@ if(CLIENT)then
 				
 					surface.SetFont( "Trebuchet24" )
 					//surface.SetTextColor( 156, 56, 58 ) Bug de transparence
-					textToDraw = "Fouiller: \""..string.upper( input.LookupBinding( "+use" ) ).."\""
+					textToDraw = "Search: \""..string.upper( input.LookupBinding( "+use" ) ).."\""
 					xSize, ySize = surface.GetTextSize( textToDraw )
 					surface.SetTextPos( (ScrW() / 2) - (xSize / 2), (ScrH() / 2) - (ySize / 2) + ScrH() * 0.035)
 					surface.DrawText( textToDraw )

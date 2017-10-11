@@ -296,10 +296,14 @@ if(CLIENT)then
 					local invOwner = eyeTrace:GetNWString("nut_inventoryOwner")
 					local textToDraw = ""
 					
-					if LocalPlayer():getChar():doesRecognize(invOwnerID) then
-						textToDraw = invOwner
+					if LocalPlayer():getChar().doesRecognize then
+						if LocalPlayer():getChar():doesRecognize(invOwnerID) then
+							textToDraw = invOwner
+						else
+							textToDraw = L("noRecog")
+						end
 					else
-						textToDraw = L("noRecog")
+						textToDraw = invOwner
 					end
 					
 					local xSize, ySize = surface.GetTextSize( textToDraw )
@@ -339,10 +343,14 @@ if(CLIENT)then
 		
 		local title = nil
 		
-		if LocalPlayer():getChar():doesRecognize(inventoryId) then
-			title = ownerName
+		if LocalPlayer():getChar().doesRecognize then
+			if LocalPlayer():getChar():doesRecognize(inventoryId) then
+				title = ownerName
+			else
+				title = L("noRecog")
+			end
 		else
-			title = L("noRecog")
+			title = ownerName
 		end
 		
 		safebox_menuINV:SetTitle(title)

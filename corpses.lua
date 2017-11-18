@@ -156,6 +156,25 @@ function createRagdoll(ragdollData, vel, ply)
 	ragdoll:setBodygroups(ragdollData[13])
 	ragdoll:Spawn()
 	ragdoll:updateBones(ply, vel, ragdollData[14])
+		
+	if (ply && IsValid(ply)) then
+
+		ragdoll:SetVar("player", ply)
+
+		ragdoll:CallOnRemove("fixer", function()
+					
+			if (IsValid(ragdoll:GetVar("player", nil))) then
+
+				ragdoll:GetVar("player"):setLocalVar("ragdollEnt", ragdoll)
+				ragdoll:SetVar("player", nil)
+
+			end
+						
+		end)
+
+		ply:setLocalVar("ragdollEnt", ragdoll:EntIndex())
+
+	end
 end
 
 // Server/Client communication
@@ -503,6 +522,32 @@ if(CLIENT)then
 			end
 		end
 	end )
+	
+	// First person view
+
+	hook.Add("CalcView", "first_person_death", function(client, origin, angles, fov)
+
+		local view = GAMEMODE.BaseClass:CalcView(client, origin, angles, fov) or {}
+		local ragdollEnt = Entity(client:getLocalVar("ragdollEnt", 0))
+
+		if (!LocalPlayer():Alive() and IsValid(ragdollEnt)) then
+		 	local ent = ragdollEnt
+			local index = ent:LookupAttachment("eyes")
+
+			if (index) then
+				local data = ent:GetAttachment(index)
+
+				if (data) then
+					view.origin = data.Pos
+					view.angles = data.Ang
+				end
+				
+				return view
+			end
+		end
+
+		return GAMEMODE.BaseClass:CalcView(client, origin, angles, fov)
+	end)
 	
 end
 

@@ -165,14 +165,14 @@ function createRagdoll(ragdollData, vel, ply)
 					
 			if (IsValid(ragdoll:GetVar("player", nil))) then
 
-				ragdoll:GetVar("player"):setLocalVar("ragdollEnt", ragdoll)
+				ragdoll:GetVar("player"):setLocalVar("ragdollEntNsCorpses", ragdoll)
 				ragdoll:SetVar("player", nil)
 
 			end
 						
 		end)
 
-		ply:setLocalVar("ragdollEnt", ragdoll:EntIndex())
+		ply:setLocalVar("ragdollEntNsCorpses", ragdoll:EntIndex())
 
 	end
 end
@@ -528,7 +528,7 @@ if(CLIENT)then
 	hook.Add("CalcView", "first_person_death", function(client, origin, angles, fov)
 
 		local view = GAMEMODE.BaseClass:CalcView(client, origin, angles, fov) or {}
-		local ragdollEnt = Entity(client:getLocalVar("ragdollEnt", 0))
+		local ragdollEnt = Entity(client:getLocalVar("ragdollEntNsCorpses", 0))
 
 		if (!LocalPlayer():Alive() and IsValid(ragdollEnt)) then
 		 	local ent = ragdollEnt

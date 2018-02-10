@@ -1,4 +1,6 @@
-# Fallout Character Menu
+# Fallout Character Menu (NOT DONE DONT DOWNLOAD)
+
+DONT DOWNLOAD BRUDDA ITS NOT DONE
 
 This is for change the default character menu of NutScript by the Lazarus Community Fallout: New Vegas Menu
 

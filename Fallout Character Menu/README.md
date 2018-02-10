@@ -21,7 +21,7 @@ nut.util.include("cl_fonts.lua")
 
 6) Add in garrysmod/gamemodes/yourgamemode/schema/sh_hooks.lua (Create sh_hooks.lua if its not already did) :
 
-player.FindByUserID = function(uid)
+```lua player.FindByUserID = function(uid)
 	for k, v in pairs(player.GetAll()) do
 		if (v:UserID() == uid) then
 			return v
@@ -108,3 +108,4 @@ function playerMeta:IsMutant()
 		end
 	end
 end
+```

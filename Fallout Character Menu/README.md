@@ -11,7 +11,8 @@ Instructions:
 4) Download sh_character.lua and paste in garrysmod/gamemodes/nutscript/gamemode/core/libs/ (Advice: Do a backup of the original sh_character.lua file)
 5) Add in garrysmod/gamemodes/yourgamemode/schema/sh_schema.lua :
 
-```lua nut.util.include("cl_cinematics.lua")
+```lua
+nut.util.include("cl_cinematics.lua")
 nut.util.include("cl_charcreation.lua")
 nut.util.include("cl_names.lua")
 nut.util.include("sh_customization.lua")
@@ -21,7 +22,8 @@ nut.util.include("cl_fonts.lua")
 
 6) Add in garrysmod/gamemodes/yourgamemode/schema/sh_hooks.lua (Create sh_hooks.lua if its not already did) :
 
-```lua player.FindByUserID = function(uid)
+```lua
+player.FindByUserID = function(uid)
 	for k, v in pairs(player.GetAll()) do
 		if (v:UserID() == uid) then
 			return v

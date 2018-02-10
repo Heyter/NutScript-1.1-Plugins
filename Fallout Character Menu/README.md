@@ -1,9 +1,9 @@
-## Fallout Character Menu
+# Fallout Character Menu
 
 This is for change the default character menu of NutScript by a Fallout Menu
 
 
-# Instructions:
+## Instructions:
 
 1) Download schema.rar and paste the schema folder in garrysmod/gamemodes/yourgamemode/	NOT IN "nutscript" FOLDER !
 2) Download resources.rar and paste the resources folder in garrysmod/gamemodes/yourgamemode/	NOT IN "nutscript" FOLDER !

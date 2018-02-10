@@ -1,8 +1,8 @@
 # Fallout Character Menu
 
-This is for change the default character menu of NutScript by a Fallout Menu
+This is for change the default character menu of NutScript by the Fallout New Vegas Menu
 
-https://ibb.co/fDR1i7
+![alt text](https://image.ibb.co/jT4nO7/20180210123534_1.jpg "Fallout Menu")
 
 ## Instructions:
 

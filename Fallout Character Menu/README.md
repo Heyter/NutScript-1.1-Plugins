@@ -8,7 +8,7 @@ This is for change the default character menu of NutScript by the Lazarus Commun
 
 1) Add thoses addons:
 
--https://steamcommunity.com/sharedfiles/filedetails/?id=745887766
+-https://steamcommunity.com/sharedfiles/filedetails/?id=745887766,
 -https://steamcommunity.com/sharedfiles/filedetails/?id=746871240
 
 2) Download schema.rar and paste the schema folder in garrysmod/gamemodes/yourgamemode/	NOT IN "nutscript" FOLDER !

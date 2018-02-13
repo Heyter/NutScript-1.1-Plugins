@@ -7,6 +7,7 @@ This is for change the default character menu of NutScript by the Lazarus Commun
 ## Instructions:
 
 1) Add thoses addons:
+
 -https://steamcommunity.com/sharedfiles/filedetails/?id=745887766
 -https://steamcommunity.com/sharedfiles/filedetails/?id=746871240
 

@@ -528,7 +528,11 @@ if(CLIENT)then
 	hook.Add("CalcView", "first_person_death", function(client, origin, angles, fov)
 
 		local view = GAMEMODE.BaseClass:CalcView(client, origin, angles, fov) or {}
-		local ragdollEnt = Entity(client:getLocalVar("ragdollEntNsCorpses", 0))
+		local ragdollEnt
+
+		if isnumber(client:getLocalVar("ragdollEnt", 0)) then
+			ragdollEnt = Entity(client:getLocalVar("ragdollEnt", 0))
+		end
 
 		if (!LocalPlayer():Alive() and IsValid(ragdollEnt)) then
 		 	local ent = ragdollEnt

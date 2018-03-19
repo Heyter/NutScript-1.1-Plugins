@@ -1,9 +1,20 @@
 PLUGIN.name = "Quick Tabs"
 PLUGIN.author = "SuperMicronde"
-PLUGIN.desc = "This plugin adds quick tabs key"
+PLUGIN.desc = "This plugin adds quick tabs keys"
+
+-- Buttons codes : http://wiki.garrysmod.com/page/Enums/BUTTON_CODE
+
+--[[ Default nutscript tabs uniqueIds:
+		business
+		config
+		help
+		inv 
+]]
+	
 
 PLUGIN.DefaultKeys = {
-	[KEY_F2] = "inv"
+  --[BUTTON_CODE] = "tabId",
+	[KEY_F2] = "inv",
 }
 
 
@@ -24,10 +35,19 @@ function PLUGIN:PlayerButtonDown( client, button )
 		local menu = self:GetNutMenu()
 
 		if IsValid(menu) then
-			menu:SetAlpha(255)
-			menu.title:SetAlpha(255)
-			menu.panel:SetAlpha(255)
 			menu:setActiveTab(bind)
+		end
+	end
+end
+
+function PLUGIN:Tick()
+	if IsValid(nut.gui.menu) && nut.gui.menu:IsVisible() then
+		nut.gui.menu.OnKeyCodePressed = function(menu, keyCode)
+			local bind = self.DefaultKeys[keyCode]
+	
+			if bind then
+				nut.gui.menu:setActiveTab(bind)
+			end
 		end
 	end
 end

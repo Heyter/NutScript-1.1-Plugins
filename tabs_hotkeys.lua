@@ -42,13 +42,11 @@ end
 
 function PLUGIN:Tick()
 	if IsValid(nut.gui.menu) && nut.gui.menu:IsVisible() then
-		if !nut.gui.menu.OnKeyCodePressed then
-			nut.gui.menu.OnKeyCodePressed = function(menu, keyCode)
-				local bind = self.DefaultKeys[keyCode]
+		nut.gui.menu.OnKeyCodePressed = function(menu, keyCode)
+			local bind = self.DefaultKeys[keyCode]
 
-				if bind then
-					nut.gui.menu:setActiveTab(bind)
-				end
+			if bind then
+				nut.gui.menu:setActiveTab(bind)
 			end
 		end
 	end

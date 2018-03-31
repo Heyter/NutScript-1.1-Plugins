@@ -14,7 +14,7 @@ PLUGIN.desc = "This plugin adds quick tabs keys"
 
 PLUGIN.DefaultKeys = {
   --[BUTTON_CODE] = "tabId",
-	[KEY_F2] = "inv",
+	[KEY_F4] = "inv",
 }
 
 
